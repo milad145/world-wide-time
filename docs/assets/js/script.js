@@ -413,7 +413,7 @@ function addCity(key, name, timeZone) {
         min, max, c: key,
         from: dateToTS(selectedTime, key),
         prettify: tsToDate,
-        onFinish: function (data) {
+        onChange: function (data) {
             selectedTime = data.from - getOffset(timeZone)+getOffset(myTimeZone)
             for (let d of Object.keys(allCities)) {
                 if (d !== key) {
