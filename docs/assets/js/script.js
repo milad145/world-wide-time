@@ -415,7 +415,6 @@ function addCity(key, name, timeZone) {
         prettify: tsToDate,
         onFinish: function (data) {
             selectedTime = data.from - getOffset(timeZone)+getOffset(myTimeZone)
-            console.log(new Date(selectedTime))
             for (let d of Object.keys(allCities)) {
                 if (d !== key) {
                     allCities[d].range.update({from: dateToTS(data.from, d, key)})
