@@ -3,12 +3,6 @@ let min = dateToTS(new Date().setHours(0, 0, 0, 0));
 let max = dateToTS(new Date().setHours(24, 0, 0, 0));
 let selectedTime = new Date();
 
-const getOffset = (timeZone = "UTC", date = new Date()) => {
-    const utcDate = new Date(date.toLocaleString("en-US", {timeZone: "UTC"}));
-    const tzDate = new Date(date.toLocaleString("en-US", {timeZone}));
-    return (tzDate.getTime() - utcDate.getTime());
-}
-
 let allCities = {};
 
 let aryIanaTimeZones = [
@@ -362,10 +356,20 @@ let aryIanaTimeZones = [
     "Africa/Johannesburg"
 ];
 let myTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
-let myTimeZoneIndex = aryIanaTimeZones.indexOf(myTimeZone)
-if (myTimeZoneIndex !== -1)
-    aryIanaTimeZones.splice(myTimeZoneIndex, 1)
 
+const getOffset = (timeZone = "UTC", date = new Date()) => {
+    const utcDate = new Date(date.toLocaleString("en-US", {timeZone: "UTC"}));
+    const tzDate = new Date(date.toLocaleString("en-US", {timeZone}));
+    return (tzDate.getTime() - utcDate.getTime());
+}
+const prettyOffset = (timeZone) => {
+    let offset = getOffset(timeZone)
+    let hours = Math.floor(Math.abs(offset / (60*60*1000)));
+    let min = Math.abs((offset % (60*60*1000))/(60*60*1000))*60;
+    if (hours < 10) hours = "0" + hours
+    if (min < 10) min = "0" + min
+    return (offset<0 ? "-" : "+") + hours + ":" + min
+}
 
 function addMyTimeZoneClock() {
     let myCity = myTimeZone.split("/").reverse()
@@ -402,9 +406,10 @@ function tsToDate(ts) {
 }
 
 function addCity(key, name, timeZone) {
+
     let city = {timeZone, name}
     allCities[key] = city
-    let element = `<div id="${key}-wrapper" class="form-group mb-3"><div class="input-group-prepend mb-2"><label for="tehran">${city.name.join(", ")}</label></div><input type="text" class="js-range-slider" id="${key}" name="my_range" value=""/></div>`
+    let element = `<div id="${key}-wrapper" class="form-group mb-3"><div class="input-group-prepend mb-2"><label for="tehran">${city.name.join(", ")} (${prettyOffset(timeZone)})</label></div><input type="text" class="js-range-slider" id="${key}" name="my_range" value=""/></div>`
     $(".container").append(element)
     $(`#${key}`).ionRangeSlider({
         skin: "big",
@@ -414,7 +419,7 @@ function addCity(key, name, timeZone) {
         from: dateToTS(selectedTime, key),
         prettify: tsToDate,
         onChange: function (data) {
-            selectedTime = data.from - getOffset(timeZone)+getOffset(myTimeZone)
+            selectedTime = data.from - getOffset(timeZone) + getOffset(myTimeZone)
             for (let d of Object.keys(allCities)) {
                 if (d !== key) {
                     allCities[d].range.update({from: dateToTS(data.from, d, key)})
@@ -456,14 +461,20 @@ function prepareCitySelector() {
     })
     let cityData = aryIanaTimeZones.map(a => {
         let text = a.split("/").reverse().join(", ")
-        return {value: a, text}
+        return {value: a, text, mandatory: a===myTimeZone}
     })
-
     citySelector.setData(cityData)
+
+    citySelector.set(myTimeZone)
+    citySelector.set('Australia/Melbourne')
+    citySelector.set('Europe/Berlin')
+    citySelector.set('Europe/London')
+    citySelector.set('America/Los_Angeles')
+    citySelector.set('America/Vancouver')
 }
 
 $(document).ready(function () {
-    addMyTimeZoneClock()
+    // addMyTimeZoneClock()
     prepareCitySelector()
     //=======================================================
 })
