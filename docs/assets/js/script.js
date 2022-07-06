@@ -460,10 +460,10 @@ function prepareCitySelector() {
         }
     })
     let cityData = aryIanaTimeZones.map(a => {
-        let text = a.split("/").reverse().join(", ")
-        return {value: a, text, mandatory: a===myTimeZone}
+        let text = a.split("/").reverse().join(", ")+` (${prettyOffset(a)})`
+        return {value: a, text, mandatory: a===myTimeZone,offset:getOffset(a)}
     })
-    citySelector.setData(cityData)
+    citySelector.setData(cityData.sort((a,b) => (a.offset > b.offset) ? -1 : ((b.offset > a.offset) ? 1 : 0)))
 
     citySelector.set(myTimeZone)
     citySelector.set('Australia/Melbourne')
